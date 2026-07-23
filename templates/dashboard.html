@@ -1,0 +1,302 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - DiaCare AI{% endblock %}
+
+{% block content %}
+<h2>Your Dashboard</h2>
+
+{% if not latest %}
+<div class="card">
+    <p>You haven't made a prediction yet.</p>
+    <a href="{{ url_for('prediction_form') }}" class="btn">Make your first prediction</a>
+</div>
+{% else %}
+
+<div class="stat-grid">
+    <div class="stat-card {{ 'risk-high' if latest.prediction == 1 else 'risk-low' }}">
+        <div class="stat-label">Prediction</div>
+        <div class="stat-value">{{ 'High Risk' if latest.prediction == 1 else 'Low Risk' }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Confidence</div>
+        <div class="stat-value">{{ "%.1f"|format(latest.confidence) }}%</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">BMI</div>
+        <div class="stat-value">{{ "%.2f"|format(latest.bmi) }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Health Score</div>
+        <div class="stat-value">{{ health_score }}/100</div>
+    </div>
+</div>
+
+<div class="chart-grid">
+    <div class="chart-card">
+        <h3>BMI Status</h3>
+        <p class="chart-status">{{ bmi_status }}</p>
+
+        <canvas id="bmiChart"></canvas>
+
+        <div class="range-info">
+            <span>Healthy Range</span>
+            <strong>18.5 - 24.9</strong>
+        </div>
+    </div>
+
+    <div class="chart-card">
+        <h3>Blood Glucose Status</h3>
+        <p class="chart-status">{{ glucose_status }}</p>
+
+        <canvas id="glucoseChart"></canvas>
+
+        <div class="range-info">
+            <span>Normal Range</span>
+            <strong>70 - 99mg/dL</strong>
+        </div>
+    </div>
+</div>
+
+<div class="chart-card" style="margin-top:20px;">
+    <h3>Overall Health Score</h3>
+    <canvas id="healthScoreChart" height="120"></canvas>
+</div>
+
+<!-- 7. AI Health Assistant -->
+<div class="chat-widget">
+    <div class="chat-header">
+        🩺 AI Health Assistant
+        <button id="chatClearBtn" class="btn-outline" style="margin-left:auto; padding:4px 12px; font-size:12px; border-radius:6px;">Clear chat</button>
+    </div>
+    <div class="chat-messages" id="chatMessages">
+        {% if chat_history %}
+            {% for msg in chat_history %}
+            <div class="chat-bubble {{ msg.sender }}">{{ msg.message }}</div>
+            {% endfor %}
+        {% else %}
+            <div class="chat-bubble bot">Hi! I have your latest prediction on hand. Ask me about diet, exercise, or lifestyle tips.</div>
+        {% endif %}
+    </div>
+    <div class="chat-input-row">
+        <input type="text" id="chatInput" placeholder="e.g. What should I eat for breakfast?">
+        <button class="btn" id="chatSendBtn">Send</button>
+    </div>
+</div>
+
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+{% if latest %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const centerTextPlugin = {
+    id: 'centerText',
+    beforeDraw(chart, args, options) {
+
+        if (!options || !options.text) return;
+
+        const {ctx} = chart;
+
+        const meta = chart.getDatasetMeta(0);
+
+        if(!meta.data.length) return;
+
+        const x = meta.data[0].x;
+        const y = meta.data[0].y + 25;
+
+        ctx.save();
+
+        ctx.textAlign='center';
+        ctx.textBaseline='middle';
+
+        ctx.fillStyle='#1E293B';
+        ctx.font='bold 34px Poppins';
+
+        ctx.fillText(options.text,x,y-15);
+
+        ctx.fillStyle='#64748B';
+        ctx.font='15px Poppins';
+
+        ctx.fillText(options.label,x,y+18);
+
+        ctx.restore();
+    }
+};
+
+Chart.register(centerTextPlugin);
+
+const bmi = {{ "%.2f"|format(latest.bmi) }};
+const bmiCtx = document.getElementById('bmiChart');
+new Chart(bmiCtx, {
+    type: 'doughnut',
+    data: {
+        datasets: [{
+            data: [bmi, Math.max(40 - bmi,0)],
+            backgroundColor: [
+                bmi < 18.5 ? '#64748B' :
+                bmi < 25 ? '#16A34A' :
+                bmi < 30 ? '#F59E0B' : '#DC2626',
+                '#E5E7EB'
+            ],
+            borderWidth:0
+        }]
+    },
+
+    options: {
+
+        responsive:true,
+
+        rotation:-90,
+
+        circumference:180,
+
+        cutout:'75%',
+
+        plugins:{
+            legend:{
+                display:false
+            },
+
+            centerText:{
+                text:bmi.toFixed(1),
+                label:'BMI'
+            },
+
+            tooltip:{
+                callbacks:{
+                    label:function(){
+                        return 'BMI : '+bmi.toFixed(1);
+                    }
+                }
+            }
+        }
+    }
+});
+const glucose = {{ "%.1f"|format(latest.blood_glucose_level) }};
+const glucoseCtx = document.getElementById('glucoseChart');
+
+new Chart(glucoseCtx, {
+    type: 'doughnut',
+
+    data:{
+        datasets:[{
+
+            data:[
+                glucose,
+                Math.max(200-glucose,0)
+            ],
+
+            backgroundColor:[
+                glucose<100 ? '#16A34A'
+                :glucose<=140 ? '#F59E0B'
+                :'#DC2626',
+
+                '#E5E7EB'
+            ],
+
+            borderWidth:0
+
+        }]
+    },
+
+    options:{
+
+        responsive:true,
+
+        rotation:-90,
+
+        circumference:180,
+
+        cutout:'75%',
+
+        plugins:{
+
+            legend:{
+                display:false
+            },
+
+            centerText:{
+                text:glucose.toString(),
+                label:'mg/dL'
+            },
+
+            tooltip:{
+                callbacks:{
+                    label:function(){
+                        return 'Blood Glucose : '+glucose+' mg/dL';
+                    }
+                }
+            }
+
+        }
+
+    }
+
+});
+const healthCtx = document.getElementById('healthScoreChart');
+new Chart(healthCtx, {
+    type: 'bar',
+    data: {
+        labels: ['Your Health Score'],
+        datasets: [{
+            label: 'Score',
+            data: [{{ health_score }}],
+            backgroundColor: '{{ "#DC2626" if latest.prediction == 1 else "#16A34A" }}',
+            barThickness: 40
+        }]
+    },
+    options: {
+        indexAxis: 'y',
+        scales: { x: { min: 0, max: 100 } },
+        plugins: { legend: { display: false } }
+    }
+});
+
+// ---- Chatbot ----
+const chatMessages = document.getElementById('chatMessages');
+const chatInput = document.getElementById('chatInput');
+const chatSendBtn = document.getElementById('chatSendBtn');
+
+function addBubble(text, sender) {
+    const div = document.createElement('div');
+    div.className = 'chat-bubble ' + sender;
+    div.textContent = text;
+    chatMessages.appendChild(div);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+async function sendMessage() {
+    const message = chatInput.value.trim();
+    if (!message) return;
+    addBubble(message, 'user');
+    chatInput.value = '';
+    addBubble('Thinking...', 'bot');
+
+    try {
+        const res = await fetch('/chatbot', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message })
+        });
+        const data = await res.json();
+        chatMessages.removeChild(chatMessages.lastChild);
+        addBubble(data.reply, 'bot');
+    } catch (err) {
+        chatMessages.removeChild(chatMessages.lastChild);
+        addBubble('Something went wrong. Please try again.', 'bot');
+    }
+}
+
+chatSendBtn.addEventListener('click', sendMessage);
+chatInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') sendMessage(); });
+chatMessages.scrollTop = chatMessages.scrollHeight;
+document.getElementById('chatClearBtn').addEventListener('click', async () => {
+    if (!confirm('Clear your chat history?')) return;
+    await fetch('/chatbot/clear', { method: 'POST' });
+    chatMessages.innerHTML = '<div class="chat-bubble bot">Hi! I have your latest prediction on hand. Ask me about diet, exercise, or lifestyle tips.</div>';
+});
+</script>
+
+{% endif %}
+{% endblock %}

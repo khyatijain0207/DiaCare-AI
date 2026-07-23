@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Diabetes Prediction Form - DiaCare AI{% endblock %}
+
+{% block content %}
+<div class="form-wrap">
+    <h2>Diabetes Risk Prediction</h2>
+    <p style="color:var(--muted); margin-top:-8px;">Fill in your details below. BMI is calculated automatically.</p>
+
+    <form method="POST" class="card">
+        <h3 style="margin-top:0; font-size:15px; color:var(--teal);">Personal Information</h3>
+        <div class="form-group">
+            <label>Name</label>
+            <input type="text" name="name" required>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Age</label>
+                <input type="number" name="age" min="1" max="120" required>
+            </div>
+            <div class="form-group">
+                <label>Gender</label>
+                <select name="gender" required>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                </select>
+            </div>
+        </div>
+
+        <h3 style="font-size:15px; color:var(--teal);">Health Information</h3>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Height (cm)</label>
+                <input type="number" step="0.1" name="height" required>
+            </div>
+            <div class="form-group">
+                <label>Weight (kg)</label>
+                <input type="number" step="0.1" name="weight" required>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Blood Glucose Level (mg/dL)</label>
+            <input type="number" step="0.1" name="blood_glucose_level" required>
+        </div>
+
+        <button type="submit" class="btn btn-block">Predict My Risk</button>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Result - DiaCare AI{% endblock %}
+
+{% block content %}
+{% set is_high = row.prediction == 1 %}
+<div class="form-wrap" style="max-width:560px;">
+
+    <div class="result-banner {{ 'high' if is_high else 'low' }}">
+        <div class="risk-label">{{ '🔴 High Risk' if is_high else '🟢 Low Risk' }}</div>
+        <p style="color:var(--muted); margin-bottom:0;">Confidence Score: <strong>{{ "%.1f"|format(row.confidence) }}%</strong></p>
+        <div class="confidence-bar-track {{ 'high' if is_high else 'low' }}">
+            <div class="confidence-bar-fill" style="width: {{ row.confidence }}%;"></div>
+        </div>
+    </div>
+
+    <div class="card" style="margin-bottom:16px;">
+        <h3 style="margin-top:0;">Why this prediction?</h3>
+        <ul class="reasons-list">
+            {% for reason in reasons %}
+            <li>• {{ reason }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div class="card">
+        <h3 style="margin-top:0;">Patient Summary</h3>
+        <ul class="reasons-list">
+            <li>Name: {{ row.patient_name }}</li>
+            <li>Age: {{ row.age }}</li>
+            <li>Gender: {{ row.gender }}</li>
+            <li>BMI: {{ "%.2f"|format(row.bmi) }}</li>
+            <li>Blood Glucose: {{ "%.1f"|format(row.blood_glucose_level) }}mg/dL</li>
+        </ul>
+    </div>
+
+    <div class="result-actions">
+        <a href="{{ url_for('feedback', pred_id=row.id) }}" class="btn">Rate This Assessment</a>
+        <a href="{{ url_for('download_report', pred_id=row.id) }}" class="btn btn-outline">Download PDF Report</a>
+    </div>
+</div>
+{% endblock %}

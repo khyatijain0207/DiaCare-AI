@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Feedback - DiaCare AI{% endblock %}
+
+{% block content %}
+<div class="form-wrap">
+
+    <h2>Share Your Feedback</h2>
+
+    <p style="color: var(--muted); margin-top:-8px; margin-bottom:24px;">
+        We'd love to hear about your experience. Your feedback helps us improve
+        DiaCare AI and provide a better diabetes risk assessment experience.
+    </p>
+
+    {% if existing %}
+
+    <div class="card" style="text-align:center;">
+        <h3 style="margin-bottom:15px;">✅ Feedback Already Submitted</h3>
+
+        <p>
+            Thank you for sharing your feedback.
+        </p>
+
+        <p style="margin:15px 0;">
+            <strong>Your Rating:</strong> {{ existing.rating }}/5 ⭐
+        </p>
+
+        {% if existing.comment %}
+        <div style="margin-top:15px;">
+            <strong>Your Comment</strong>
+            <p style="margin-top:8px; color:var(--muted); font-style:italic;">
+                "{{ existing.comment }}"
+            </p>
+        </div>
+        {% endif %}
+
+        <a href="{{ url_for('dashboard') }}" class="btn" style="margin-top:20px;">
+            Return to Dashboard
+        </a>
+    </div>
+
+    {% else %}
+
+    <form method="POST" class="card">
+
+        <div class="form-group">
+            <label>How helpful was this assessment?</label>
+
+            <div class="star-rating">
+
+                <input type="radio" id="star5" name="rating" value="5" required>
+                <label for="star5" class="star-label">★</label>
+
+                <input type="radio" id="star4" name="rating" value="4">
+                <label for="star4" class="star-label">★</label>
+
+                <input type="radio" id="star3" name="rating" value="3">
+                <label for="star3" class="star-label">★</label>
+
+                <input type="radio" id="star2" name="rating" value="2">
+                <label for="star2" class="star-label">★</label>
+
+                <input type="radio" id="star1" name="rating" value="1">
+                <label for="star1" class="star-label">★</label>
+
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Your Feedback (Optional)</label>
+
+            <textarea
+                name="comment"
+                rows="4"
+                placeholder="Tell us what you liked or how we can improve..."></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-block">
+            Submit Feedback
+        </button>
+
+    </form>
+
+    <p style="text-align:center; margin-top:18px; color:var(--muted); font-size:14px;">
+        ❤️ Thank you for helping us improve DiaCare AI.
+    </p>
+
+    {% endif %}
+
+</div>
+{% endblock %}

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}DiaCare AI{% endblock %}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon.png') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+{% block extra_head %}{% endblock %}
+</head>
+<body>
+
+<nav class="navbar">
+    <a href="{{ url_for('home') }}" class="nav-logo">
+    <img src="{{ url_for('static', filename='images/logo.png') }}"
+         alt="DiaCare AI Logo"
+         class="logo-img">
+
+    <span>
+        DiaCare <span class="logo-accent">AI</span>
+    </span>
+    </a>
+    <div class="nav-links">
+        {% if session.user_id %}
+            <a href="{{ url_for('dashboard') }}">Dashboard</a>
+            <a href="{{ url_for('prediction_form') }}">New Prediction</a>
+            <a href="{{ url_for('history') }}">History</a>
+            <a href="{{ url_for('logout') }}" class="nav-btn-outline">Logout</a>
+        {% else %}
+            <a href="{{ url_for('login') }}">Login</a>
+            <a href="{{ url_for('signup') }}" class="nav-btn">Sign Up</a>
+        {% endif %}
+    </div>
+</nav>
+
+<div class="flash-container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="flash flash-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+</div>
+
+<main>
+    {% block content %}{% endblock %}
+</main>
+
+<footer class="footer">
+    <p>DiaCare AI &mdash; AI-powered diabetes risk prediction for educational purposes only. Always consult a healthcare professional for medical advice.</p>
+</footer>
+
+{% block scripts %}{% endblock %}
+</body>
+</html>

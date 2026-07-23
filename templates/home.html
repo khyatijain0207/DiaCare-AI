@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}DiaCare AI - Home{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <h1>Know your diabetes risk in under a minute</h1>
+    <p>Our AI-powered prediction model analyzes your age, gender, BMI, and blood glucose level to estimate diabetes risk and provide personalized wellness recommendation.</p>
+    <div class="hero-actions">
+        {% if session.user_id %}
+            <a href="{{ url_for('prediction_form') }}" class="btn">Get Started</a>
+        {% else %}
+            <a href="{{ url_for('signup') }}" class="btn">Get Started</a>
+            <a href="{{ url_for('login') }}" class="btn btn-outline">Login</a>
+        {% endif %}
+    </div>
+
+    <div class="flow-steps">
+        <div class="flow-step">
+            <div class="step-num">STEP 1</div>
+            <strong>Fill the form</strong>
+            <p style="color:var(--muted); font-size:13px;">Age, gender, height, weight & blood glucose.</p>
+        </div>
+        <div class="flow-step">
+            <div class="step-num">STEP 2</div>
+            <strong>AI predicts risk</strong>
+            <p style="color:var(--muted); font-size:13px;">Our trained ML model scores your risk instantly.</p>
+        </div>
+        <div class="flow-step">
+            <div class="step-num">STEP 3</div>
+            <strong>Understand why</strong>
+            <p style="color:var(--muted); font-size:13px;">See exactly which factors drove the result.</p>
+        </div>
+        <div class="flow-step">
+            <div class="step-num">STEP 4</div>
+            <strong>Ask the assistant</strong>
+            <p style="color:var(--muted); font-size:13px;">Get diet & lifestyle tips tailored to your result.</p>
+        </div>
+    </div>
+</section>
+{% endblock %}
